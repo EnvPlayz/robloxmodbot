@@ -43,7 +43,6 @@ client.on('ready', () => {
 
 client.on('messageCreate',async message => {
     if (message.author.bot) return;
-    var generalChannel = await client.channels.fetch('1059442582259765351');
     if(message.content=="are you online bot"){
         message.reply(`yes <@${message.author.id}>`)
     }else if(message.content=="$getfilterbase$"){
@@ -51,7 +50,8 @@ client.on('messageCreate',async message => {
         for(var badextra of sensList){
             stringofbad+=badextra+" "
         }
-        message.reply(stringofbad)
+        message.reply(stringofbad);
+        (await message.channel.send("e")).url
     }
     else{
         moderate(message)
@@ -68,19 +68,19 @@ function moderate(message){
     var yyyy = today.getFullYear();
 
     today = mm + '/' + dd + '/' + yyyy;
-    axios.get(`https://www.purgomalum.com/service/containsprofanity?text=${message.content}&add=${badthing}`).then(res => {
+    axios.get(`https://www.purgomalum.com/service/containsprofanity?text=${message.content}&add=${badthing}`).then(async res => {
         if (res.data == true || hasNumber(message.content)) {
             message.delete().catch(function (err) {
                 message.reply("Something went wrong filtering message")
             })
-            axios.get(`https://www.purgomalum.com/service/json?text=${message.content}&add=${badthing}`).then(filterdata => {
+            axios.get(`https://www.purgomalum.com/service/json?text=${message.content}&add=${badthing}`).then(async filterdata => {
                 if (filterdata.data.result == undefined) {
                     message.reply(`❌ Uh oh Error occured on message sent by <@${message.author.id}>: ${filterdata.data.error}`)
                     return false
                 }
                 var numReplaced = filterdata.data.result.replace(/[0-9]/g, "#");
                 var tagged = numReplaced.replaceAll("*", "#")
-                var sickmsg = message.channel.send(message.author.username + ": " + tagged)
+                var sickmsg = (await message.channel.send(message.author.username + ": " + tagged))
                 var dmMsg = `Our content monitors have determined that your behavior in this server has been in violation of our Terms of Use.\nReviewed: **${today}**\n**Moderator Note**: Do not swear, use profanity or otherwise say inappropriate things in this server.\nReview your message here: ${sickmsg.url}`
                 message.author.send(dmMsg)
             }).catch(function () {
@@ -100,7 +100,7 @@ function moderate(message){
                 message.delete().catch(function(){
                     message.reply("Something went wrong filtering message")
                 })
-                var sickmsg = message.channel.send(message.author.username + ": " + tagged)
+                var sickmsg = (await message.channel.send(message.author.username + ": " + tagged))
                 var dmMsg = `Our content monitors have determined that your behavior in this server has been in violation of our Terms of Use.\nReviewed: **${today}**\n**Moderator Note**: Do not swear, use profanity or otherwise say inappropriate things in this server.\nReview your message here: ${sickmsg.url}`
                 message.author.send(dmMsg)
             }
