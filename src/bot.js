@@ -68,13 +68,11 @@ function moderate(message){
     var yyyy = today.getFullYear();
 
     today = mm + '/' + dd + '/' + yyyy;
-    var dmMsg = `Our content monitors have determined that your behavior in this server has been in violation of our Terms of Use.\nReviewed: **${today}**\n**Moderator Note**: Do not swear, use profanity or otherwise say inappropriate things in this server.\nReview your message here: ${message.url}`
     axios.get(`https://www.purgomalum.com/service/containsprofanity?text=${message.content}&add=${badthing}`).then(res => {
         if (res.data == true || hasNumber(message.content)) {
             message.delete().catch(function (err) {
                 message.reply("Something went wrong filtering message")
             })
-            message.author.send(dmMsg)
             axios.get(`https://www.purgomalum.com/service/json?text=${message.content}&add=${badthing}`).then(filterdata => {
                 if (filterdata.data.result == undefined) {
                     message.reply(`❌ Uh oh Error occured on message sent by <@${message.author.id}>: ${filterdata.data.error}`)
@@ -82,7 +80,9 @@ function moderate(message){
                 }
                 var numReplaced = filterdata.data.result.replace(/[0-9]/g, "#");
                 var tagged = numReplaced.replaceAll("*", "#")
-                message.channel.send(message.author.username + ": " + tagged)
+                var sickmsg = message.channel.send(message.author.username + ": " + tagged)
+                var dmMsg = `Our content monitors have determined that your behavior in this server has been in violation of our Terms of Use.\nReviewed: **${today}**\n**Moderator Note**: Do not swear, use profanity or otherwise say inappropriate things in this server.\nReview your message here: ${sickmsg.url}`
+                message.author.send(dmMsg)
             }).catch(function () {
                 console.log("Something went wrong while moderating in block 2.");
             })
@@ -100,8 +100,9 @@ function moderate(message){
                 message.delete().catch(function(){
                     message.reply("Something went wrong filtering message")
                 })
+                var sickmsg = message.channel.send(message.author.username + ": " + tagged)
+                var dmMsg = `Our content monitors have determined that your behavior in this server has been in violation of our Terms of Use.\nReviewed: **${today}**\n**Moderator Note**: Do not swear, use profanity or otherwise say inappropriate things in this server.\nReview your message here: ${sickmsg.url}`
                 message.author.send(dmMsg)
-                message.channel.send(message.author.username + ": " + tagged)
             }
         }
     }).catch(function(err){
